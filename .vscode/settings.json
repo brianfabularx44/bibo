@@ -1,0 +1,9 @@
+{
+    "cSpell.words": [
+        "sqlalchemy",
+        "werkzeug"
+    ],
+    "python.analysis.extraPaths": [
+        "./bib-recog"
+    ]
+}
