@@ -36,9 +36,9 @@ def easy(img):
         print("Error occurred:", e)
     return text
 
-def scale_roi(x, y, w, h, image_shape):
+def scale_roi(x, y, w, h, image_shape, size=1.1):
     # Function to scale the ROI
-    expansion_factor = 1.1
+    expansion_factor = size
     new_x = int(x - (w * (expansion_factor - 1) / 2))
     new_y = int(y - (h * (expansion_factor - 1) / 2))
     new_w = int(w * expansion_factor)
@@ -53,7 +53,7 @@ def scale_roi(x, y, w, h, image_shape):
 
 def images(folder, bibnumber):
     # Load the cascade
-    cascade = cv2.CascadeClassifier('C:/Users/PC/Desktop/BIB-O_BackEnd/bib_recog/cascade.xml')
+    cascade = cv2.CascadeClassifier('C:/Users/PC/Desktop/BIB-O_BackEnd/bib_recog/cascade1.xml')
     filenames = []
     # Folder paths
     input_folder = 'C:/Users/PC/Desktop/BIB-O_BackEnd/gallery/'+folder
@@ -62,6 +62,9 @@ def images(folder, bibnumber):
     for filename in os.listdir(input_folder):
         if filename.endswith(".jpg"):
             # Read the input image
+            if bibnumber == '':
+                filenames.append(filename)
+                continue
             image_path = os.path.join(input_folder, filename)
             image = cv2.imread(image_path)
             if image is None:
@@ -84,9 +87,33 @@ def images(folder, bibnumber):
                         if roi_image.shape[0] > 0 and roi_image.shape[1] > 0:
                             text = easy(roi_image)  # Perform OCR
                             # text = "uhh"
-                            if text and text.find(bibnumber) != -1 or bibnumber.find(text) != -1:
+                            print("text in file: "+filename+" "+text)
+                            if len(text) == 1 or len(text) == 0:
+                                new_x, new_y, new_w, new_h = scale_roi(x, y, w, h, gray.shape,1.5)
+                                scale = cv2.GaussianBlur(roi_image,(5,5),0)
+                                # scale = cv2.medianBlur(scale, 5)
+                                # scale = cv2.dilate(scale, kernel, iterations=1)
+                                # scale = cv2.erode(scale, kernel, iterations=2)
+                                scale = cv2.Canny(scale, 90,130)
+                                # if is_image_small:
+                                #     scale = cv2.Canny(scale, 100,200)
+                                # else:
+                                #     scale = cv2.Canny(scale, 90,130)
+                                scale = cv2.GaussianBlur(scale,(5,5),0)
+                                scale = cv2.threshold(scale, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+                                scale = cv2.resize(scale, None, fx=2,fy=2,interpolation=cv2.INTER_CUBIC)
+                                # scale = cv2.threshold(scale, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+                                scale = cv2.erode(scale, (7,7), iterations=2) #for colored bg
+                                # scale = cv2.dilate(scale, kernel, iterations=1) #for white bg
+                                scale = cv2.morphologyEx(scale, cv2.MORPH_CLOSE, (7,7))
+                                text = easy(scale)  # Perform OCR
+                                # print(text)
+                                # cv2.imshow('Object Detection', scale)
+                                # cv2.waitKey(0) 
+                            if text == '':
+                                continue
+                            if text.find(bibnumber) != -1 or bibnumber.find(text) != -1:
                                 filenames.append(filename)
-                                print(filename)
                                 print(text)
                                     # cv2.rectangle(image, (new_x, new_y), (new_x+new_w, new_y+new_h), (255, 0, 0), 2)
                                     # cv2.putText(image, text, (new_x, new_y), cv2.FONT_HERSHEY_SIMPLEX, 2, (123, 255, 123), 8)
