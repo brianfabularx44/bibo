@@ -56,7 +56,7 @@ def images(folder, bibnumber):
     cascade = cv2.CascadeClassifier('C:/Users/PC/Desktop/BIB-O_BackEnd/bib_recog/cascade1.xml')
     filenames = []
     # Folder paths
-    input_folder = 'C:/Users/PC/Desktop/BIB-O_BackEnd/gallery/'+folder
+    input_folder = 'C:/Users/PC/Desktop/BIB-O_BackEnd/static/gallery/'+folder
 
     # Iterate through each file in the folder
     for filename in os.listdir(input_folder):

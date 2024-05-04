@@ -57,6 +57,27 @@ def get_by_id(id):
                 response = jsonify(EVENT_RETRIEVED, {"data": dict(result)})
                 response.headers.add("Access-Control-Allow-Origin", "*")
                 return jsonify(response), 200
+            
+# Get events by slug
+@events.route("/slug/<slug>", methods={"GET"})
+# @logged_in
+def get_by_slug(slug):
+
+    if request.method == "GET":
+        with engine.connect() as conn:
+
+            query = text("SELECT * FROM event where slug = :slug")
+            param = dict(slug=slug)
+
+            result = conn.execute(query, param).fetchone()
+            print(result)
+            if result is None:
+                response = jsonify(NO_EVENTS)
+                response.headers.add("Access-Control-Allow-Origin", "*")
+                return jsonify(response), 400
+            else:
+                response_data = {"status": "EVENT_RETRIEVED", "data": result._asdict()}
+                return jsonify(response_data), 200
 
 
 # Create events
@@ -81,9 +102,10 @@ def create_event():
         with engine.connect() as conn:
 
             query = text(
-                "INSERT INTO event(name,date,venue,time,short_description,datetime_created) VALUES(:name,:date,:venue,:time,:short_description,now())"
+                "INSERT INTO event(slug,name,date,venue,time_start,short_description,datetime_created) VALUES(:slug,:name,:date,:venue,:time,:short_description,now())"
             )
             params = dict(
+                slug=data["slug"],
                 name=data["name"],
                 date=data["date"],
                 venue=data["venue"],

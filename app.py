@@ -61,7 +61,19 @@ def index():
 def multi_images():
     
     if request.method == "POST":
+        
+        print(request.form.get('slug'))
+        slug = request.form.get('slug')
+        path = os.getcwd()
+        # file Upload
+        UPLOAD_FOLDER = os.path.join(path, "static/gallery",slug.strip())
+    
+        # Make directory if uploads is not exists
+        if not os.path.isdir(UPLOAD_FOLDER):
+            os.mkdir(UPLOAD_FOLDER)
 
+
+        app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
         if "files[]" not in request.files:
             
             response = jsonify({"success": False, "message": "not located in the folder"})
